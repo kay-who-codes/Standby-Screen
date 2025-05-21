@@ -58,7 +58,6 @@
             position: absolute;
             width: 150px;
             height: auto;
-            transition: transform 0.2s ease;
         }
         
         footer {
@@ -107,63 +106,70 @@
         const image = document.getElementById('dvd-image');
 
         let containerWidth, containerHeight, imageWidth, imageHeight;
-        let x, y, dx, dy;
-
-        // Function to set up initial state after image load
+        let x = 0, y = 0, dx, dy;
+        
+        // Wait for image to be loaded before getting dimensions
         function initAnimation() {
-            containerWidth = container.clientWidth;
-            containerHeight = container.clientHeight;
-            imageWidth = image.clientWidth;
-            imageHeight = image.clientHeight;
-
+            // Get current dimensions
+            containerWidth = container.offsetWidth;
+            containerHeight = container.offsetHeight;
+            imageWidth = image.offsetWidth;
+            imageHeight = image.offsetHeight;
+            
             // Random starting position within bounds
-            x = Math.random() * (containerWidth - imageWidth);
-            y = Math.random() * (containerHeight - imageHeight);
-
+            x = Math.floor(Math.random() * (containerWidth - imageWidth));
+            y = Math.floor(Math.random() * (containerHeight - imageHeight));
+            
             // Random direction and speed
             dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
             dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
-
-            // Start animation
+            
+            // Apply initial position
             updatePosition();
-            animate();
+            
+            // Start animation loop
+            requestAnimationFrame(animate);
         }
-
+        
         function updatePosition() {
-            image.style.left = `${x}px`;
-            image.style.top = `${y}px`;
+            image.style.left = x + 'px';
+            image.style.top = y + 'px';
         }
-
+        
         function animate() {
+            // Update position
             x += dx;
             y += dy;
-
+            
+            // Check for horizontal boundaries
             if (x <= 0 || x + imageWidth >= containerWidth) {
-                dx = -dx;
-                x = Math.max(0, Math.min(x, containerWidth - imageWidth));
+                dx = -dx; // Reverse direction
+                x = x <= 0 ? 0 : containerWidth - imageWidth; // Fix position to stay within bounds
             }
-
+            
+            // Check for vertical boundaries
             if (y <= 0 || y + imageHeight >= containerHeight) {
-                dy = -dy;
-                y = Math.max(0, Math.min(y, containerHeight - imageHeight));
+                dy = -dy; // Reverse direction
+                y = y <= 0 ? 0 : containerHeight - imageHeight; // Fix position to stay within bounds
             }
-
+            
             updatePosition();
             requestAnimationFrame(animate);
         }
-
+        
         // Handle window resizing
-        window.addEventListener('resize', function () {
-            containerWidth = container.clientWidth;
-            containerHeight = container.clientHeight;
-
+        window.addEventListener('resize', function() {
+            containerWidth = container.offsetWidth;
+            containerHeight = container.offsetHeight;
+            
+            // Keep logo within bounds after resize
             x = Math.min(x, containerWidth - imageWidth);
             y = Math.min(y, containerHeight - imageHeight);
-
+            
             updatePosition();
         });
-
-        // Start after image is fully loaded
+        
+        // Check if image is already loaded
         if (image.complete) {
             initAnimation();
         } else {
