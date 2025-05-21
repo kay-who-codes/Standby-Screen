@@ -101,90 +101,75 @@
         <p>© 2025 DVD Standby Screen Simulator</p>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const container = document.getElementById('dvd-container');
-            const image = document.getElementById('dvd-image');
-            
-            // Get initial dimensions
-            let containerWidth = container.clientWidth;
-            let containerHeight = container.clientHeight;
-            let imageWidth = image.clientWidth;
-            let imageHeight = image.clientHeight;
-            
-            // Set random starting position
-            let x = Math.random() * (containerWidth - imageWidth);
-            let y = Math.random() * (containerHeight - imageHeight);
-            
-            // Set random movement speed and direction
-            let dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
-            let dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
-            
-            // Update image position
-            function updatePosition() {
-                image.style.left = x + 'px';
-                image.style.top = y + 'px';
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('dvd-container');
+        const image = document.getElementById('dvd-image');
+
+        let containerWidth, containerHeight, imageWidth, imageHeight;
+        let x, y, dx, dy;
+
+        // Function to set up initial state after image load
+        function initAnimation() {
+            containerWidth = container.clientWidth;
+            containerHeight = container.clientHeight;
+            imageWidth = image.clientWidth;
+            imageHeight = image.clientHeight;
+
+            // Random starting position within bounds
+            x = Math.random() * (containerWidth - imageWidth);
+            y = Math.random() * (containerHeight - imageHeight);
+
+            // Random direction and speed
+            dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
+            dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
+
+            // Start animation
+            updatePosition();
+            animate();
+        }
+
+        function updatePosition() {
+            image.style.left = `${x}px`;
+            image.style.top = `${y}px`;
+        }
+
+        function animate() {
+            x += dx;
+            y += dy;
+
+            if (x <= 0 || x + imageWidth >= containerWidth) {
+                dx = -dx;
+                x = Math.max(0, Math.min(x, containerWidth - imageWidth));
             }
-            
-            // Function to handle animation
-            function animate() {
-                // Update position
-                x += dx;
-                y += dy;
-                
-                // Check for horizontal collision
-                if (x <= 0 || x + imageWidth >= containerWidth) {
-                    dx = -dx; // Reverse horizontal direction
-                    x = Math.max(0, Math.min(x, containerWidth - imageWidth)); // Ensure image stays within bounds
-                }
-                
-                // Check for vertical collision
-                if (y <= 0 || y + imageHeight >= containerHeight) {
-                    dy = -dy; // Reverse vertical direction
-                    y = Math.max(0, Math.min(y, containerHeight - imageHeight)); // Ensure image stays within bounds
-                }
-                
-                // Update image position
-                updatePosition();
-                
-                // Continue animation loop
-                requestAnimationFrame(animate);
+
+            if (y <= 0 || y + imageHeight >= containerHeight) {
+                dy = -dy;
+                y = Math.max(0, Math.min(y, containerHeight - imageHeight));
             }
-            
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                containerWidth = container.clientWidth;
-                containerHeight = container.clientHeight;
-                
-                // Keep image within bounds after resize
-                x = Math.min(x, containerWidth - imageWidth);
-                y = Math.min(y, containerHeight - imageHeight);
-                
-                updatePosition();
-            });
-            
-            // Start the animation after image is loaded
-            image.onload = function() {
-                imageWidth = image.clientWidth;
-                imageHeight = image.clientHeight;
-                
-                // Update initial position after image load
-                x = Math.random() * (containerWidth - imageWidth);
-                y = Math.random() * (containerHeight - imageHeight);
-                updatePosition();
-                
-                // Start animation
-                animate();
-            };
-            
-            // If image is already loaded
-            if (image.complete) {
-                imageWidth = image.clientWidth;
-                imageHeight = image.clientHeight;
-                updatePosition();
-                animate();
-            }
+
+            updatePosition();
+            requestAnimationFrame(animate);
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', function () {
+            containerWidth = container.clientWidth;
+            containerHeight = container.clientHeight;
+
+            x = Math.min(x, containerWidth - imageWidth);
+            y = Math.min(y, containerHeight - imageHeight);
+
+            updatePosition();
         });
-    </script>
+
+        // Start after image is fully loaded
+        if (image.complete) {
+            initAnimation();
+        } else {
+            image.onload = initAnimation;
+        }
+    });
+</script>
 </body>
 </html>
