@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏸️ Standby Screen</title>
+    <style>
+        :root {
+            --background: #131313;
+            --text: #FFFFFF;
+            --primary-accent: #4caf50;
+            --secondary-accent: #ff4081;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-accent);
+        }
+        
+        main {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 80px);
+            overflow: hidden;
+        }
+        
+        #dvd-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #dvd-image {
+            position: absolute;
+            width: 150px;
+            height: auto;
+            transition: transform 0.2s ease;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+            
+            #dvd-image {
+                width: 100px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            #dvd-image {
+                width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Standby Screen</h1>
+        <p></p>
+    </header>
+    
+    <main>
+        <section id="dvd-container">
+            <img id="dvd-image" src="Assets/image.png" alt="Moving DVD Logo">
+        </section>
+    </main>
+    
+    <footer>
+        <p>© 2025 DVD Standby Screen Simulator</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('dvd-container');
+            const image = document.getElementById('dvd-image');
+            
+            // Get initial dimensions
+            let containerWidth = container.clientWidth;
+            let containerHeight = container.clientHeight;
+            let imageWidth = image.clientWidth;
+            let imageHeight = image.clientHeight;
+            
+            // Set random starting position
+            let x = Math.random() * (containerWidth - imageWidth);
+            let y = Math.random() * (containerHeight - imageHeight);
+            
+            // Set random movement speed and direction
+            let dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
+            let dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
+            
+            // Update image position
+            function updatePosition() {
+                image.style.left = x + 'px';
+                image.style.top = y + 'px';
+            }
+            
+            // Function to handle animation
+            function animate() {
+                // Update position
+                x += dx;
+                y += dy;
+                
+                // Check for horizontal collision
+                if (x <= 0 || x + imageWidth >= containerWidth) {
+                    dx = -dx; // Reverse horizontal direction
+                    x = Math.max(0, Math.min(x, containerWidth - imageWidth)); // Ensure image stays within bounds
+                }
+                
+                // Check for vertical collision
+                if (y <= 0 || y + imageHeight >= containerHeight) {
+                    dy = -dy; // Reverse vertical direction
+                    y = Math.max(0, Math.min(y, containerHeight - imageHeight)); // Ensure image stays within bounds
+                }
+                
+                // Update image position
+                updatePosition();
+                
+                // Continue animation loop
+                requestAnimationFrame(animate);
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                containerWidth = container.clientWidth;
+                containerHeight = container.clientHeight;
+                
+                // Keep image within bounds after resize
+                x = Math.min(x, containerWidth - imageWidth);
+                y = Math.min(y, containerHeight - imageHeight);
+                
+                updatePosition();
+            });
+            
+            // Start the animation after image is loaded
+            image.onload = function() {
+                imageWidth = image.clientWidth;
+                imageHeight = image.clientHeight;
+                
+                // Update initial position after image load
+                x = Math.random() * (containerWidth - imageWidth);
+                y = Math.random() * (containerHeight - imageHeight);
+                updatePosition();
+                
+                // Start animation
+                animate();
+            };
+            
+            // If image is already loaded
+            if (image.complete) {
+                imageWidth = image.clientWidth;
+                imageHeight = image.clientHeight;
+                updatePosition();
+                animate();
+            }
+        });
+    </script>
+</body>
+</html>
