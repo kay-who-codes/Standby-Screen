@@ -3,179 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⏸️ Standby Screen</title>
+    <title>DVD Screensaver</title>
     <style>
         :root {
+            --primary-accent: #4CAF50;
+            --secondary-color: #ff4081;
             --background: #131313;
-            --text: #FFFFFF;
-            --primary-accent: #4caf50;
-            --secondary-accent: #ff4081;
+            --text-color: #FFFFFF;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: var(--background);
-            color: var(--text);
-            min-height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        header {
-            padding: 1rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary-accent);
-        }
-        
-        main {
-            flex: 1;
-            position: relative;
-            width: 100%;
-            height: calc(100vh - 80px);
-            overflow: hidden;
-        }
-        
-        #dvd-container {
-            position: relative;
-            width: 100%;
+
+        html, body {
             height: 100%;
+            overflow: hidden;
         }
-        
-        #dvd-image {
+
+        body {
+            background-color: #000000;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+        }
+
+        .dvd-image {
             position: absolute;
-            width: 150px;
+            width: 120px;
             height: auto;
+            pointer-events: none;
+            user-select: none;
+            transition: filter 0.3s ease;
         }
-        
-        footer {
-            text-align: center;
-            padding: 0.5rem;
-            font-size: 0.8rem;
-            opacity: 0.7;
+
+        .dvd-image img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
-        
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.2rem;
-            }
-            
-            #dvd-image {
-                width: 100px;
-            }
+
+        /* Color variations for bouncing effect */
+        .color-primary {
+            filter: hue-rotate(0deg) brightness(1.2);
         }
-        
-        @media (max-width: 400px) {
-            #dvd-image {
-                width: 80px;
-            }
+
+        .color-secondary {
+            filter: hue-rotate(180deg) brightness(1.1);
+        }
+
+        .color-accent {
+            filter: hue-rotate(90deg) brightness(1.3);
+        }
+
+        .color-default {
+            filter: brightness(1);
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Standby Screen</h1>
-        <p></p>
-    </header>
-    
     <main>
-        <section id="dvd-container">
-            <img id="dvd-image" src="Assets/image.png" alt="Moving DVD Logo">
+        <section class="dvd-image" id="dvdImage">
+            <img src="Assets/image.png" alt="DVD Logo">
         </section>
     </main>
-    
-    <footer>
-        <p>© 2025 DVD Standby Screen Simulator</p>
-    </footer>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const container = document.getElementById('dvd-container');
-        const image = document.getElementById('dvd-image');
+    <script>
+        class DVDScreensaver {
+            constructor() {
+                this.dvdElement = document.getElementById('dvdImage');
+                this.img = this.dvdElement.querySelector('img');
+                
+                // Wait for image to load before starting
+                this.img.addEventListener('load', () => {
+                    this.init();
+                });
+                
+                // If image is already loaded
+                if (this.img.complete) {
+                    this.init();
+                }
+            }
 
-        let containerWidth, containerHeight, imageWidth, imageHeight;
-        let x = 0, y = 0, dx, dy;
-        
-        // Wait for image to be loaded before getting dimensions
-        function initAnimation() {
-            // Get current dimensions
-            containerWidth = container.offsetWidth;
-            containerHeight = container.offsetHeight;
-            imageWidth = image.offsetWidth;
-            imageHeight = image.offsetHeight;
-            
-            // Random starting position within bounds
-            x = Math.floor(Math.random() * (containerWidth - imageWidth));
-            y = Math.floor(Math.random() * (containerHeight - imageHeight));
-            
-            // Random direction and speed
-            dx = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
-            dy = (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2);
-            
-            // Apply initial position
-            updatePosition();
-            
-            // Start animation loop
-            requestAnimationFrame(animate);
-        }
-        
-        function updatePosition() {
-            image.style.left = x + 'px';
-            image.style.top = y + 'px';
-        }
-        
-        function animate() {
-            // Update position
-            x += dx;
-            y += dy;
-            
-            // Check for horizontal boundaries
-            if (x <= 0 || x + imageWidth >= containerWidth) {
-                dx = -dx; // Reverse direction
-                x = x <= 0 ? 0 : containerWidth - imageWidth; // Fix position to stay within bounds
+            init() {
+                this.setupInitialPosition();
+                this.setupVelocity();
+                this.setupColors();
+                this.startAnimation();
+                this.handleResize();
             }
-            
-            // Check for vertical boundaries
-            if (y <= 0 || y + imageHeight >= containerHeight) {
-                dy = -dy; // Reverse direction
-                y = y <= 0 ? 0 : containerHeight - imageHeight; // Fix position to stay within bounds
+
+            setupInitialPosition() {
+                // Get screen dimensions
+                this.screenWidth = window.innerWidth;
+                this.screenHeight = window.innerHeight;
+                
+                // Get image dimensions
+                this.imageWidth = this.img.offsetWidth;
+                this.imageHeight = this.img.offsetHeight;
+                
+                // Random starting position (ensuring image stays within bounds)
+                this.x = Math.random() * (this.screenWidth - this.imageWidth);
+                this.y = Math.random() * (this.screenHeight - this.imageHeight);
+                
+                this.updatePosition();
             }
-            
-            updatePosition();
-            requestAnimationFrame(animate);
+
+            setupVelocity() {
+                // Random velocity between 1-3 pixels per frame
+                const speed = 1.5 + Math.random() * 1.5;
+                const angle = Math.random() * Math.PI * 2;
+                
+                this.velocityX = Math.cos(angle) * speed;
+                this.velocityY = Math.sin(angle) * speed;
+            }
+
+            setupColors() {
+                this.colors = ['color-default', 'color-primary', 'color-secondary', 'color-accent'];
+                this.currentColorIndex = 0;
+            }
+
+            updatePosition() {
+                this.dvdElement.style.left = this.x + 'px';
+                this.dvdElement.style.top = this.y + 'px';
+            }
+
+            changeColor() {
+                // Remove current color class
+                this.dvdElement.className = 'dvd-image';
+                
+                // Add new color class
+                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
+                this.dvdElement.classList.add(this.colors[this.currentColorIndex]);
+            }
+
+            checkBoundaries() {
+                let bounced = false;
+
+                // Check left and right boundaries
+                if (this.x <= 0 || this.x >= this.screenWidth - this.imageWidth) {
+                    this.velocityX = -this.velocityX;
+                    this.x = Math.max(0, Math.min(this.x, this.screenWidth - this.imageWidth));
+                    bounced = true;
+                }
+
+                // Check top and bottom boundaries
+                if (this.y <= 0 || this.y >= this.screenHeight - this.imageHeight) {
+                    this.velocityY = -this.velocityY;
+                    this.y = Math.max(0, Math.min(this.y, this.screenHeight - this.imageHeight));
+                    bounced = true;
+                }
+
+                // Change color when bouncing
+                if (bounced) {
+                    this.changeColor();
+                }
+            }
+
+            animate() {
+                // Update position
+                this.x += this.velocityX;
+                this.y += this.velocityY;
+
+                // Check for boundary collisions
+                this.checkBoundaries();
+
+                // Update DOM position
+                this.updatePosition();
+
+                // Continue animation
+                requestAnimationFrame(() => this.animate());
+            }
+
+            startAnimation() {
+                this.animate();
+            }
+
+            handleResize() {
+                window.addEventListener('resize', () => {
+                    this.screenWidth = window.innerWidth;
+                    this.screenHeight = window.innerHeight;
+                    
+                    // Ensure image stays within new boundaries
+                    this.x = Math.min(this.x, this.screenWidth - this.imageWidth);
+                    this.y = Math.min(this.y, this.screenHeight - this.imageHeight);
+                    
+                    this.updatePosition();
+                });
+            }
         }
-        
-        // Handle window resizing
-        window.addEventListener('resize', function() {
-            containerWidth = container.offsetWidth;
-            containerHeight = container.offsetHeight;
-            
-            // Keep logo within bounds after resize
-            x = Math.min(x, containerWidth - imageWidth);
-            y = Math.min(y, containerHeight - imageHeight);
-            
-            updatePosition();
+
+        // Initialize the screensaver when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new DVDScreensaver();
         });
-        
-        // Check if image is already loaded
-        if (image.complete) {
-            initAnimation();
-        } else {
-            image.onload = initAnimation;
-        }
-    });
-</script>
+    </script>
 </body>
 </html>
